@@ -1,30 +1,11 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import streamlit as st
-
-
-# In[2]:
-
-
 import numpy as np
 import pandas as pd
 
-
-# In[3]:
-
-
 def handle_missing_values(df):
-    #Remove rows with missing values
+    # Remove rows with missing values
     df_cleaned = df.dropna()
     return df_cleaned
-
-
-# In[4]:
-
 
 def main():
     st.title("Data Quality Tool")
@@ -38,10 +19,23 @@ def main():
             st.write("Original Dataset:")
             st.write(df)
 
+            # Show button to view dataset with highlighted missing values
+            if st.button("View Dataset with Missing Values"):
+                st.write("Dataset with Missing Values:")
+                df_with_missing_values = df.copy()
+                missing_values_mask = df_with_missing_values.isnull()
+                st.dataframe(df_with_missing_values.style.highlight_null(null_color='red'))
+
             # Handle missing values
             df_cleaned = handle_missing_values(df)
             st.write("Dataset after handling missing values:")
             st.write(df_cleaned)
+
+            # Show button to delete rows with missing values
+            if st.button("Delete Rows with Missing Values"):
+                df_cleaned = handle_missing_values(df)
+                st.write("Dataset after deleting rows with missing values:")
+                st.write(df_cleaned)
 
             # Allow user to export the cleaned dataset
             export_format = st.selectbox("Export Format:", ["CSV", "Excel"])
@@ -60,10 +54,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
-
