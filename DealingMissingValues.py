@@ -11,7 +11,6 @@ def handle_missing_values_with_klib(df):
 def handle_missing_values_with_dtale(df):
     # Handle missing values using dtale
     dtale_app = dtale.show(df)
-    dtale_app.kill()  # Close the D-Tale web application after data manipulation
     return df
 
 def main():
