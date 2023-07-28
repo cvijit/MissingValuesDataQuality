@@ -8,7 +8,10 @@ def main():
     st.header("Upload your CSV or Excel file")
     file_format = st.selectbox("Select file format:", ["CSV", "Excel"])
 
-    uploaded_file = st.file_uploader("Choose a file", type=[file_format.lower()])
+    if file_format == "CSV":
+        uploaded_file = st.file_uploader("Choose a file", type=["csv"])
+    else:
+        uploaded_file = st.file_uploader("Choose a file", type=["xlsx"])
 
     if uploaded_file is not None:
         df = read_data(uploaded_file)
