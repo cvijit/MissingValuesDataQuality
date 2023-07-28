@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 def main():
-    st.title("Duplicate Finder App")
+    st.title("Data Validation and Manipulation App")
 
     # File Upload
     st.header("Upload your CSV or Excel file")
@@ -11,24 +11,39 @@ def main():
     if uploaded_file is not None:
         df = read_data(uploaded_file)
 
-        # Find duplicates
-        duplicates = find_duplicates(df)
+        # Data Quality Checks
+        st.header("Data Quality Checks")
+        st.subheader("Data Summary")
+        st.write(df.describe())
 
-        # Highlight duplicates in the DataFrame
-        df_style = df.style.apply(highlight_duplicates, subset=duplicates)
+        st.subheader("Missing Value Analysis")
+        missing_values = df.isnull().sum()
+        st.write(missing_values)
 
-        # Show the DataFrame with highlighted duplicates
-        st.header("Data with Duplicates Highlighted")
-        st.dataframe(df_style)
+        st.subheader("Duplicate Values")
+        duplicate_rows = df.duplicated()
+        st.write(duplicate_rows)
 
-        # Option to delete or ignore duplicates
-        st.header("Options")
-        option = st.radio("Choose an option:", ("Ignore Duplicates", "Delete Duplicates"))
+        # Data Validation Checks
+        st.header("Data Validation Checks")
+        st.subheader("Data Type Validation")
+        column_datatypes = df.dtypes
+        st.write(column_datatypes)
 
-        if option == "Ignore Duplicates":
-            df_cleaned = df.drop_duplicates(keep='first')
-        else:
+        st.subheader("Unique Values")
+        unique_values = df.nunique()
+        st.write(unique_values)
+
+        # Data Manipulation
+        st.header("Data Manipulation")
+        if st.checkbox("Remove Rows with Missing Values"):
+            df_cleaned = df.dropna()
+
+        if st.checkbox("Drop Duplicate Rows"):
             df_cleaned = df.drop_duplicates()
+
+        st.subheader("Data After Manipulation")
+        st.write(df_cleaned)
 
         # Export cleaned data to CSV or Excel
         st.header("Export Cleaned Data")
@@ -49,13 +64,6 @@ def read_data(file):
         st.error("Invalid file type. Only CSV and Excel files are supported.")
         df = None
     return df
-
-def find_duplicates(df):
-    duplicates = df.duplicated(keep=False)
-    return duplicates
-
-def highlight_duplicates(s):
-    return ['background-color: yellow' if v else '' for v in s]
 
 def export_csv(df):
     csv_file = "cleaned_data.csv"
