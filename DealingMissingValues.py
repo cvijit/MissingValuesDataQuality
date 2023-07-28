@@ -6,7 +6,9 @@ def main():
 
     # File Upload
     st.header("Upload your CSV or Excel file")
-    uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"])
+    file_format = st.selectbox("Select file format:", ["CSV", "Excel"])
+
+    uploaded_file = st.file_uploader("Choose a file", type=[file_format.lower()])
 
     if uploaded_file is not None:
         df = read_data(uploaded_file)
@@ -47,10 +49,8 @@ def main():
 
         # Export cleaned data to CSV or Excel
         st.header("Export Cleaned Data")
-        export_format = st.radio("Choose export format:", ("CSV", "Excel"))
-
         if st.button("Export"):
-            if export_format == "CSV":
+            if file_format == "CSV":
                 export_csv(df_cleaned)
             else:
                 export_excel(df_cleaned)
