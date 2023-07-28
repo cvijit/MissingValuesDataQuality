@@ -1,50 +1,71 @@
 import streamlit as st
 import pandas as pd
-import dtale
-import klib
-
-def handle_missing_values_with_klib(df):
-    # Handle missing values using klib
-    df_cleaned = klib.data_cleaning(df)
-    return df_cleaned
-
-def handle_missing_values_with_dtale(df):
-    # Handle missing values using dtale
-    dtale_app = dtale.show(df)
-    return df
 
 def main():
-    st.title("Data Analysis and Manipulation App")
+    st.title("Duplicate Finder App")
 
-    # Upload file
-    uploaded_file = st.file_uploader("Upload CSV or Excel file", type=["csv", "xlsx"])
+    # File Upload
+    st.header("Upload your CSV or Excel file")
+    uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
+        df = read_data(uploaded_file)
 
-        st.subheader("Preview of the Dataset:")
-        st.dataframe(df)
+        # Find duplicates
+        duplicates = find_duplicates(df)
 
-        if st.button("Use klib for Missing Data Handling"):
-            df_cleaned_klib = handle_missing_values_with_klib(df)
-            st.subheader("Dataset after handling missing values using klib:")
-            st.dataframe(df_cleaned_klib)
+        # Highlight duplicates in the DataFrame
+        df_style = df.style.apply(highlight_duplicates, subset=duplicates)
 
-        if st.button("Use dtale for Missing Data Handling"):
-            df_cleaned_dtale = handle_missing_values_with_dtale(df)
-            st.subheader("Dataset after handling missing values using dtale:")
-            st.dataframe(df_cleaned_dtale)
+        # Show the DataFrame with highlighted duplicates
+        st.header("Data with Duplicates Highlighted")
+        st.dataframe(df_style)
 
-        # Export the cleaned dataset
-        export_format = st.selectbox("Export Format:", ["CSV", "Excel"])
+        # Option to delete or ignore duplicates
+        st.header("Options")
+        option = st.radio("Choose an option:", ("Ignore Duplicates", "Delete Duplicates"))
 
-        if st.button("Export Cleaned Data"):
+        if option == "Ignore Duplicates":
+            df_cleaned = df.drop_duplicates(keep='first')
+        else:
+            df_cleaned = df.drop_duplicates()
+
+        # Export cleaned data to CSV or Excel
+        st.header("Export Cleaned Data")
+        export_format = st.radio("Choose export format:", ("CSV", "Excel"))
+
+        if st.button("Export"):
             if export_format == "CSV":
-                df.to_csv("cleaned_data.csv", index=False)
-                st.success("Data exported to cleaned_data.csv")
-            elif export_format == "Excel":
-                df.to_excel("cleaned_data.xlsx", index=False)
-                st.success("Data exported to cleaned_data.xlsx")
+                export_csv(df_cleaned)
+            else:
+                export_excel(df_cleaned)
+
+def read_data(file):
+    if file.type == "csv":
+        df = pd.read_csv(file)
+    elif file.type == "xlsx":
+        df = pd.read_excel(file, engine='openpyxl')
+    else:
+        st.error("Invalid file type. Only CSV and Excel files are supported.")
+        df = None
+    return df
+
+def find_duplicates(df):
+    duplicates = df.duplicated(keep=False)
+    return duplicates
+
+def highlight_duplicates(s):
+    return ['background-color: yellow' if v else '' for v in s]
+
+def export_csv(df):
+    csv_file = "cleaned_data.csv"
+    df.to_csv(csv_file, index=False)
+    st.success(f"Data exported to {csv_file}")
+
+def export_excel(df):
+    excel_file = "cleaned_data.xlsx"
+    df.to_excel(excel_file, index=False, engine='openpyxl')
+    st.success(f"Data exported to {excel_file}")
 
 if __name__ == "__main__":
     main()
